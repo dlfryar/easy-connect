@@ -97,6 +97,14 @@ EasyCellularConnection cellular;
     WizFi310Interface wifi(MBED_CONF_EASY_CONNECT_WIFI_WIZFI310_TX, MBED_CONF_EASY_CONNECT_WIFI_WIZFI310_RX);
 #endif
 
+#elif MBED_CONF_APP_NETWORK_INTERFACE == CELLULAR_WNC14A2A
+#include "WNC14A2AInterface.h"
+
+WNC14A2AInterface *wnc;
+#if MBED_CONF_APP_WNC_DEBUG == true
+#include "WNCDebug.h"
+WNCDebug dbgout(stderr);
+#endif
 
 #else
 #error "No connectivity method chosen. Please add 'config.network-interfaces.value' to your mbed_app.json (see README.md for more information)."
@@ -237,6 +245,31 @@ NetworkInterface* easy_connect(bool log_messages) {
 #  endif
     connect_success = cellular.connect();
     network_interface = &cellular;
+
+#elif MBED_CONF_APP_NETWORK_INTERFACE == CELLULAR_WNC14A2A
+    if (log_messages) {
+        printf("[EasyConnect] Using WNC14A2A\n");
+    }
+#   if MBED_CONF_APP_WNC_DEBUG == true
+        printf("[EasyConnect] With WNC14A2A debug output set to 0x%02X\n",MBED_CONF_APP_WNC_DEBUG_SETTING);
+        wnc = new WNC14A2AInterface(&dbgout);
+        if (wnc == NULL) {
+            if (log_messages) 
+                printf("[EasyConnect] ERROR - Unable to allocate a wnc pointer\n");
+            return NULL;
+            }
+        wnc->doDebug(MBED_CONF_APP_WNC_DEBUG_SETTING);
+#   else
+        wnc = new WNC14A2AInterface;
+        if (wnc == NULL) {
+            if (log_messages) 
+                printf("[EasyConnect] ERROR - Unable to allocate a wnc pointer\n");
+            return NULL;
+            }
+#   endif
+    network_interface = wnc;
+    connect_success = wnc->connect();
+
 #elif MBED_CONF_APP_NETWORK_INTERFACE == ETHERNET
     if (log_messages) {
         printf("[EasyConnect] Using Ethernet\n");
@@ -346,6 +379,11 @@ NetworkInterface* easy_get_netif(bool log_messages) {
         printf("[EasyConnect] Cellular\n");
     }
     return  &cellular;
+#elif MBED_CONF_APP_NETWORK_INTERFACE == CELLULAR_WNC14A2A
+    if (log_messages) {
+        printf("[EasyConnect] WNC14A2A\n");
+    }
+    return  wnc;
 #endif
 }
 

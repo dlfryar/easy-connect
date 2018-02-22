@@ -32,6 +32,8 @@ If you select `ETHERNET` with `UBLOX_ODIN_EVK_W2` you must add this to your `tar
             }
 ```
 
+If you select `CELLULAR_WNC14A2A`, you must include the `BufferedSerial` library (mbed add http://os.mbed.com/users/sam_grove/code/BufferedSerial/) because the WNC14A2A communicates via a UART interface.
+
 If you select `WIFI_ESP8266`, `WIFI_IDW0XX1`, `WIFI_ODIN` or `WIFI_RTW`, `WIFI_WIZFI310` you also need to add the WiFi SSID and password:
 
 ```json
